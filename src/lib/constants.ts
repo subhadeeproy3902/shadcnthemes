@@ -1,0 +1,81 @@
+
+export const SHADCN_PRESETS: ColorPreset[] = [
+  {
+    name: "Zinc",
+    colors: {
+      primary: "240 5.9% 10%",
+      secondary: "240 3.7% 15.9%",
+      accent: "240 4.8% 95.9%",
+      destructive: "0 84.2% 60.2%",
+    },
+    backgroundLight: "240 5% 98%",
+    backgroundDark: "240 10% 4%",
+    cardLight: "240 5% 96%",
+    cardDark: "240 10% 6%",
+  },
+  {
+    name: "Slate",
+    colors: {
+      primary: "222.2 47.4% 11.2%",
+      secondary: "215 27.9% 16.9%",
+      accent: "210 40% 96.1%",
+      destructive: "0 84.2% 60.2%",
+    },
+    backgroundLight: "222 5% 98%",
+    backgroundDark: "222 10% 4%",
+    cardLight: "222 5% 96%",
+    cardDark: "222 10% 6%",
+  },
+  {
+    name: "Stone",
+    colors: {
+      primary: "22.2 21.4% 11.2%",
+      secondary: "60 3.7% 15.9%",
+      accent: "60 4.8% 95.9%",
+      destructive: "0 84.2% 60.2%",
+    },
+    backgroundLight: "22 5% 98%",
+    backgroundDark: "22 10% 4%",
+    cardLight: "22 5% 96%",
+    cardDark: "22 10% 6%",
+  },
+  {
+    name: "Red",
+    colors: {
+      primary: "0 72.2% 50.6%",
+      secondary: "0 47.4% 11.2%",
+      accent: "0 4.8% 95.9%",
+      destructive: "0 84.2% 60.2%",
+    },
+    backgroundLight: "0 5% 98%",
+    backgroundDark: "0 10% 4%",
+    cardLight: "0 5% 96%",
+    cardDark: "0 10% 6%",
+  },
+  {
+    name: "Orange",
+    colors: {
+      primary: "24.6 95% 53.1%",
+      secondary: "40 47.4% 11.2%",
+      accent: "20 4.8% 95.9%",
+      destructive: "0 84.2% 60.2%",
+    },
+    backgroundLight: "24 5% 98%",
+    backgroundDark: "24 10% 4%",
+    cardLight: "24 5% 96%",
+    cardDark: "24 10% 6%",
+  },
+  {
+    name: "Blue",
+    colors: {
+      primary: "221.2 83.2% 53.3%",
+      secondary: "215 27.9% 16.9%",
+      accent: "210 40% 96.1%",
+      destructive: "0 84.2% 60.2%",
+    },
+    backgroundLight: "221 5% 98%",
+    backgroundDark: "221 10% 4%",
+    cardLight: "221 5% 96%",
+    cardDark: "221 10% 6%",
+  },
+];
