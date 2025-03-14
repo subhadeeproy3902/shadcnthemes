@@ -1,4 +1,8 @@
 interface ColorConfig {
+  primary: string;
+  secondary: string;
+  accent: string;
+  destructive: string;
   [key: string]: string;
 }
 
