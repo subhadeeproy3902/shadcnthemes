@@ -1,11 +1,10 @@
 import { CardsActivityGoal } from "./showcase-components/activity-goal"
-import { BadgesDiv } from "./showcase-components/badgesdiv"
 import { ButtonsDiv } from "./showcase-components/buttonsdiv"
 import { CardsCalendar } from "./showcase-components/calendar"
-import { ChartDiv } from "./showcase-components/chartdiv"
 import { CardsChat } from "./showcase-components/chat"
 import { CardsCookieSettings } from "./showcase-components/cookie-settings"
 import { CardsCreateAccount } from "./showcase-components/create-account"
+import { CardsMetric } from "./showcase-components/metric"
 import { CardsPaymentMethod } from "./showcase-components/payment-method"
 import { CardsShare } from "./showcase-components/share"
 
@@ -28,7 +27,7 @@ export default function Showcase() {
           <div className="space-y-4 xl:space-y-4">
             <CardsChat />
             <CardsCreateAccount />
-            <BadgesDiv />
+            <ButtonsDiv />
           </div>
         </div>
       </div>
@@ -40,10 +39,9 @@ export default function Showcase() {
           </div>
         </div>
         <CardsShare />
-        <ButtonsDiv />
+        <CardsMetric />
       </div>
     </div>
-    <ChartDiv />
     </>
   )
 }
