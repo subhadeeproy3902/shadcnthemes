@@ -1,11 +1,9 @@
 import { ThemeCustomizer } from "@/components/theme-customizer";
-import { ModeToggle } from "@/components/mode-toggle";
-import { Github } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Space_Grotesk } from "next/font/google";
 import Showcase from "@/components/showcase";
 import Navbar from "@/components/navbar";
+import { Badge } from "@/components/Badge";
 
 const brico = Space_Grotesk({ subsets: ["latin"] });
 
@@ -29,7 +27,7 @@ export default function Home() {
             <div className="text-center">
               <h2
                 className={
-                  "text-3xl flex flex-wrap mx-auto items-center justify-center my-8 font-bold leading-tight tracking-tighter sm:text-4xl md:text-5xl lg:text-7xl" +
+                  "text-4xl flex flex-wrap mx-auto items-center justify-center my-8 font-bold leading-tight tracking-tighter sm:text-4xl md:text-5xl lg:text-7xl" +
                   brico.className
                 }
               >
@@ -48,23 +46,15 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-3 px-4 sm:gap-4">
-              <div className="inline-flex items-center rounded-lg bg-muted/50 backdrop-blur px-3 py-1 text-sm font-medium">
-                🎨 Real-time preview
+            <div className="flex-wrap hidden sm:flex items-center justify-center gap-3 px-4 sm:gap-4">
+              <div className="inline-flex items-center rounded-lg justify-center px-3 py-1 text-sm font-medium">
+                <Badge text="🎨 Real-time preview" />
               </div>
-              <Separator
-                orientation="vertical"
-                className="hidden h-4 sm:block"
-              />
-              <div className="inline-flex items-center rounded-lg bg-muted/50 backdrop-blur px-3 py-1 text-sm font-medium">
-                🌗 Light & Dark modes
+              <div className="nline-flex items-center rounded-lg justify-center px-3 py-1 text-sm font-medium">
+                <Badge text="🌗 Light & Dark modes" />
               </div>
-              <Separator
-                orientation="vertical"
-                className="hidden h-4 sm:block"
-              />
-              <div className="inline-flex items-center rounded-lg bg-muted/50 backdrop-blur px-3 py-1 text-sm font-medium">
-                📋 Copy CSS variables
+              <div className="nline-flex items-center rounded-lg justify-center px-3 py-1 text-sm font-medium">
+                <Badge text="📋 Copy CSS variables" />
               </div>
             </div>
 
