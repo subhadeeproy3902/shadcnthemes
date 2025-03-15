@@ -38,6 +38,7 @@ import {
   parseHSLString,
 } from "@/lib/colors";
 import { ScrollArea } from "./ui/scroll-area";
+import { BorderBeam } from "./ui/border-beam";
 
 export function ThemeCustomizer() {
   const { theme, resolvedTheme } = useTheme();
@@ -343,7 +344,7 @@ export function ThemeCustomizer() {
               className="flex items-center gap-2"
             >
               <Wand2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Randomize</span>
+              <span className="inline">Randomize</span>
             </Button>
 
             <Button
@@ -352,7 +353,7 @@ export function ThemeCustomizer() {
               className="flex items-center gap-2"
             >
               <Copy className="h-4 w-4" />
-              <span className="hidden sm:inline">Copy</span>
+              <span className="inline">Copy</span>
             </Button>
           </div>
         </div>
@@ -461,6 +462,17 @@ export function ThemeCustomizer() {
           </div>
         </DialogContent>
       </Dialog>
+      <BorderBeam
+        duration={6}
+        size={300}
+        className="from-transparent via-primary to-transparent"
+      />
+      <BorderBeam
+        duration={6}
+        size={300}
+        reverse
+        className="from-transparent via-destructive to-transparent"
+      />
     </Card>
   );
 }
