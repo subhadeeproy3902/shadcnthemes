@@ -1,28 +1,24 @@
-"use client"
+"use client";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "../ui/avatar"
-import { Button } from "../ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Button } from "../ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../ui/card"
-import { Input } from "../ui/input"
-import { Label } from "../ui/label"
+} from "../ui/card";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select"
-import { Separator } from "../ui/separator"
+} from "../ui/select";
+import { Separator } from "../ui/separator";
 
 export function CardsShare() {
   return (
@@ -46,8 +42,7 @@ export function CardsShare() {
           <Button className="shrink-0">Copy Link</Button>
         </div>
         <Separator className="my-4" />
-        <div className="space-y-4">
-          <div className="text-sm font-medium">People with access</div>
+        <div className="space-y-4 pt-5">
           <div className="grid gap-6">
             <div className="flex items-center justify-between space-x-4">
               <div className="flex items-center space-x-4">
@@ -122,5 +117,5 @@ export function CardsShare() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
