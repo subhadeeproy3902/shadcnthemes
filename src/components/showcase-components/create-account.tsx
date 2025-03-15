@@ -18,9 +18,6 @@ export function CardsCreateAccount() {
     <Card>
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl">Create an account</CardTitle>
-        <CardDescription>
-          Enter your email below to create your account
-        </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
         <div className="grid grid-cols-2 gap-6">
@@ -43,11 +40,11 @@ export function CardsCreateAccount() {
             </span>
           </div>
         </div>
-        <div className="grid gap-2">
+        <div className="grid gap-2 text-left mt-2">
           <Label htmlFor="email">Email</Label>
           <Input id="email" type="email" placeholder="m@example.com" />
         </div>
-        <div className="grid gap-2">
+        <div className="grid gap-2 text-left">
           <Label htmlFor="password">Password</Label>
           <Input id="password" type="password" />
         </div>
