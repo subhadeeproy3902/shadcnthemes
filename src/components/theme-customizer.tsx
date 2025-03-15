@@ -5,7 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Wand2, RotateCcw, Copy, Check, Lock } from "lucide-react";
+import {
+  Wand2,
+  RotateCcw,
+  Copy,
+  Check,
+  Lock,
+  Palette,
+  Sparkles,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import {
   Dialog,
@@ -15,6 +23,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SHADCN_PRESETS } from "@/lib/constants";
 import {
   generateRandomColors,
   generateBackground,
@@ -25,21 +34,19 @@ import {
   generateRing,
   hslToHex,
   hexToHSL,
-  isValidDestructiveColor,
   calculateForegroundColor,
   parseHSLString,
-  generateHarmonizedColors,
 } from "@/lib/colors";
-import { SHADCN_PRESETS } from "@/lib/constants";
+import { ScrollArea } from "./ui/scroll-area";
 
 export function ThemeCustomizer() {
-  const { theme, resolvedTheme, setTheme } = useTheme();
+  const { theme, resolvedTheme } = useTheme();
   const [colors, setColors] = useState<ColorConfig>(SHADCN_PRESETS[0].colors);
   const [colorHistory, setColorHistory] = useState<ColorConfig[]>([]);
   const [currentHistoryIndex, setCurrentHistoryIndex] = useState(-1);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState("presets");
+  const [activeTab, setActiveTab] = useState("custom");
   const [currentPreset, setCurrentPreset] = useState<ColorPreset | null>(
     SHADCN_PRESETS[0]
   );
@@ -49,42 +56,40 @@ export function ThemeCustomizer() {
   const editableColors = ["secondary", "accent"];
 
   const getThemeSpecificColor = (key: string) => {
-    if (key === "primary" || key === "destructive") {
-      return colors[key];
+    // Ensure we have a valid color value before returning
+    const defaultColor = "0 0% 0%";
+
+    if (!colors) return defaultColor;
+
+    if (key === "primary") {
+      return isDarkMode
+        ? colors["primary-dark"] || defaultColor
+        : colors.primary || defaultColor;
     }
-    return isDarkMode ? colors[`${key}-dark`] : colors[key];
+    if (key === "destructive") {
+      return colors[key] || defaultColor;
+    }
+    return isDarkMode
+      ? colors[`${key}-dark`] || defaultColor
+      : colors[key] || defaultColor;
   };
 
   const updateColor = (key: string, value: string) => {
     if (!editableColors.includes(key)) return;
 
-    if (key === "destructive" && !isValidDestructiveColor(value)) {
-      return;
-    }
-
     let newColors = { ...colors };
+    const [h, s] = value.split(" ");
 
-    if (key === "primary") {
-      const [h] = value.split(" ").map((v) => parseFloat(v));
-      newColors = generateHarmonizedColors(h, isDarkMode);
-      // Update muted colors based on primary
-      newColors.muted = `${h} 30% 94%`;
-      newColors["muted-dark"] = `${h} 30% 12%`;
-    } else if (key === "destructive") {
-      newColors[key] = value;
+    if (isDarkMode) {
+      const l = Math.random() * 20;
+      newColors[`${key}-dark`] = `${h} ${s} ${l.toFixed(2)}%`;
+      const lightL = 75 + Math.random() * 25;
+      newColors[key] = `${h} ${s} ${lightL.toFixed(2)}%`;
     } else {
-      const [h, s] = value.split(" ");
-      if (isDarkMode) {
-        const l = Math.random() * 20;
-        newColors[`${key}-dark`] = `${h} ${s} ${l.toFixed(2)}%`;
-        const lightL = 75 + Math.random() * 25;
-        newColors[key] = `${h} ${s} ${lightL.toFixed(2)}%`;
-      } else {
-        const l = 75 + Math.random() * 25;
-        newColors[key] = `${h} ${s} ${l.toFixed(2)}%`;
-        const darkL = Math.random() * 20;
-        newColors[`${key}-dark`] = `${h} ${s} ${darkL.toFixed(2)}%`;
-      }
+      const l = 75 + Math.random() * 25;
+      newColors[key] = `${h} ${s} ${l.toFixed(2)}%`;
+      const darkL = Math.random() * 20;
+      newColors[`${key}-dark`] = `${h} ${s} ${darkL.toFixed(2)}%`;
     }
 
     setCurrentPreset(null);
@@ -97,7 +102,6 @@ export function ThemeCustomizer() {
     if (!editableColors.includes(key)) return;
     const hslColor = hexToHSL(hexColor);
     updateColor(key, hslColor);
-    setActiveTab("custom");
   };
 
   const handleManualColorInput = (key: string, value: string) => {
@@ -105,12 +109,13 @@ export function ThemeCustomizer() {
     const parsedHSL = parseHSLString(value);
     if (parsedHSL) {
       updateColor(key, parsedHSL);
-      setActiveTab("custom");
     }
   };
 
   const getHexFromHSL = (hslString: string): string => {
+    if (!hslString) return "#000000";
     const [h, s, l] = hslString.split(" ").map((v) => parseFloat(v));
+    if (isNaN(h) || isNaN(s) || isNaN(l)) return "#000000";
     return hslToHex(h, s, l);
   };
 
@@ -123,16 +128,15 @@ export function ThemeCustomizer() {
     setCurrentHistoryIndex(newHistory.length - 1);
   };
 
-  const randomizeColors = () => {
+  const randomizeColors = async () => {
     const newColors = generateRandomColors(isDarkMode);
-    const [h] = newColors.primary.split(" ").map((v) => parseFloat(v));
-    newColors.muted = `${h} 30% 94%`;
-    newColors["muted-dark"] = `${h} 30% 12%`;
     setCurrentPreset(null);
     addToHistory(newColors);
     setColors(newColors);
     updateThemeColors(newColors);
-    setActiveTab("custom");
+
+    // Add a small delay for visual feedback
+    await new Promise((resolve) => setTimeout(resolve, 500));
   };
 
   const previousTheme = () => {
@@ -161,14 +165,6 @@ export function ThemeCustomizer() {
       const foregroundColor = calculateForegroundColor(value);
       root.style.setProperty(`--${key}-foreground`, foregroundColor);
     });
-
-    // Set muted colors based on primary
-    const mutedValue = isDarkMode ? newColors["muted-dark"] : newColors.muted;
-    root.style.setProperty("--muted", mutedValue);
-    root.style.setProperty(
-      "--muted-foreground",
-      isDarkMode ? "240 5% 64.9%" : "240 3.8% 46.1%"
-    );
 
     // Generate and set background colors
     const backgroundValue = preset
@@ -212,12 +208,14 @@ export function ThemeCustomizer() {
     const ringValue = generateRing(newColors.primary);
     root.style.setProperty("--ring", ringValue);
 
-    // Update data-theme attribute for preset themes
-    if (preset) {
-      root.setAttribute("data-theme", preset.name.toLowerCase());
-    } else {
-      root.removeAttribute("data-theme");
-    }
+    // Set muted colors based on background
+    const [bgH, bgS] = backgroundValue.split(" ");
+    const mutedValue = isDarkMode ? `${bgH} ${bgS} 15%` : `${bgH} ${bgS} 96%`;
+    root.style.setProperty("--muted", mutedValue);
+    root.style.setProperty(
+      "--muted-foreground",
+      isDarkMode ? "0 0% 63.9%" : "240 3.8% 46.1%"
+    );
   };
 
   const generateCSS = () => {
@@ -238,6 +236,12 @@ export function ThemeCustomizer() {
     const lightBorder = generateBorder(colors.primary, false);
     const darkBorder = generateBorder(colors.primary, true);
 
+    // Generate muted colors based on background
+    const [lightBgH, lightBgS] = lightBackground.split(" ");
+    const [darkBgH, darkBgS] = darkBackground.split(" ");
+    const lightMuted = `${lightBgH} ${lightBgS} 96%`;
+    const darkMuted = `${darkBgH} ${darkBgS} 15%`;
+
     return `@layer base {
   :root {
     --background: ${lightBackground};
@@ -254,7 +258,7 @@ export function ThemeCustomizer() {
     --accent-foreground: ${calculateForegroundColor(colors.accent)};
     --destructive: ${colors.destructive};
     --destructive-foreground: 0 0% 98%;
-    --muted: ${colors.muted};
+    --muted: ${lightMuted};
     --muted-foreground: 240 3.8% 46.1%;
     --border: ${lightBorder};
     --input: ${lightBorder};
@@ -269,8 +273,8 @@ export function ThemeCustomizer() {
     --card-foreground: 0 0% 98%;
     --popover: ${darkPopover};
     --popover-foreground: 0 0% 98%;
-    --primary: ${colors.primary};
-    --primary-foreground: ${calculateForegroundColor(colors.primary)};
+    --primary: ${colors["primary-dark"]};
+    --primary-foreground: ${calculateForegroundColor(colors["primary-dark"])};
     --secondary: ${colors["secondary-dark"]};
     --secondary-foreground: ${calculateForegroundColor(
       colors["secondary-dark"]
@@ -279,11 +283,11 @@ export function ThemeCustomizer() {
     --accent-foreground: ${calculateForegroundColor(colors["accent-dark"])};
     --destructive: ${colors.destructive};
     --destructive-foreground: 0 0% 98%;
-    --muted: ${colors["muted-dark"]};
-    --muted-foreground: 240 5% 64.9%;
+    --muted: ${darkMuted};
+    --muted-foreground: 0 0% 63.9%;
     --border: ${darkBorder};
     --input: ${darkBorder};
-    --ring: ${colors.primary};
+    --ring: ${colors["primary-dark"]};
   }
 }`;
   };
@@ -304,7 +308,6 @@ export function ThemeCustomizer() {
   };
 
   useEffect(() => {
-    // History is empty, then return
     if (colorHistory.length === 0) return;
     if (currentPreset) {
       updateThemeColors(colors, currentPreset);
@@ -313,186 +316,152 @@ export function ThemeCustomizer() {
     }
   }, [theme, resolvedTheme]);
 
+  console.log(colors["primary-dark"], colors.primary);
+
   return (
-    <div className="space-y-6">
-      <Card className="w-full max-w-3xl mx-auto p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">Theme Customizer</h2>
-          <div className="flex gap-2">
+    <Card className="relative overflow-hidden border bg-background/60 p-6 backdrop-blur-sm">
+      <div className="relative">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
+              Theme Customizer
+            </h2>
+          </div>
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
               onClick={previousTheme}
               disabled={currentHistoryIndex <= 0}
               className="flex items-center gap-2"
             >
-              <RotateCcw className="w-4 h-4" />
-              Previous
+              <RotateCcw className="h-4 w-4" />
+              <span className="hidden sm:inline">Previous</span>
             </Button>
+
             <Button
               onClick={randomizeColors}
               className="flex items-center gap-2"
             >
-              <Wand2 className="w-4 h-4" />
-              Randomize
+              <Wand2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Randomize</span>
             </Button>
+
             <Button
               variant="outline"
               onClick={() => setIsDialogOpen(true)}
               className="flex items-center gap-2"
             >
-              <Copy className="w-4 h-4" />
-              Copy CSS
+              <Copy className="h-4 w-4" />
+              <span className="hidden sm:inline">Copy</span>
             </Button>
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="custom">Custom Colors</TabsTrigger>
-            <TabsTrigger value="presets">Shadcn Presets</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="custom">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {mainColors.map((key) => (
-                <div key={key}>
-                  <Label className="capitalize">{key}</Label>
-                  <div className="flex gap-2 mt-1.5">
-                    <Input
-                      value={getThemeSpecificColor(key)}
-                      onChange={(e) =>
-                        handleManualColorInput(key, e.target.value)
-                      }
-                      className="font-mono flex-1"
-                      placeholder="Format: 220 70% 50%"
-                      disabled={!editableColors.includes(key)}
-                    />
-                    <div className="relative">
-                      <input
-                        type="color"
-                        value={getHexFromHSL(getThemeSpecificColor(key))}
-                        onChange={(e) =>
-                          handleColorPickerChange(key, e.target.value)
-                        }
-                        className={`w-12 h-8 rounded border cursor-pointer ${
-                          !editableColors.includes(key) ? "opacity-50" : ""
-                        }`}
-                        disabled={!editableColors.includes(key)}
-                      />
-                      {!editableColors.includes(key) && (
-                        <Lock className="w-4 h-4 absolute top-1/2 right-1 transform -translate-y-1/2 text-muted-foreground" />
-                      )}
-                    </div>
-                  </div>
-                  {key === "primary" && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Primary color is locked and generates harmonized colors
-                    </p>
-                  )}
-                  {key === "destructive" && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Destructive color is locked to the red range
-                    </p>
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {mainColors.map((key) => (
+            <div key={key}>
+              <Label className="capitalize">{key}</Label>
+              <div className="flex gap-2 mt-1.5">
+                <Input
+                  value={getThemeSpecificColor(key)}
+                  onChange={(e) => handleManualColorInput(key, e.target.value)}
+                  className="font-mono flex-1"
+                  placeholder="Format: 220 70% 50%"
+                  disabled={!editableColors.includes(key)}
+                />
+                <div className="relative">
+                  <input
+                    type="color"
+                    value={getHexFromHSL(getThemeSpecificColor(key))}
+                    onChange={(e) =>
+                      handleColorPickerChange(key, e.target.value)
+                    }
+                    className={`w-12 h-8 rounded border cursor-pointer ${
+                      !editableColors.includes(key) ? "opacity-50" : ""
+                    }`}
+                    disabled={!editableColors.includes(key)}
+                  />
+                  {!editableColors.includes(key) && (
+                    <Lock className="w-4 h-4 absolute top-1/2 right-1 transform -translate-y-1/2 text-muted-foreground" />
                   )}
                 </div>
-              ))}
+              </div>
+              {key === "primary" && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  <span className="text-red-500">*</span> Primary color is
+                  locked and generates harmonized colors
+                </p>
+              )}
+              {key === "destructive" && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  <span className="text-red-500">*</span> Destructive color is
+                  locked to the red range
+                </p>
+              )}
             </div>
-          </TabsContent>
-
-          <TabsContent value="presets">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {SHADCN_PRESETS.map((preset) => (
-                <Button
-                  key={preset.name}
-                  variant="outline"
-                  className={`h-auto p-4 flex flex-col gap-2 ${
-                    currentPreset?.name === preset.name
-                      ? "ring-2 ring-primary"
-                      : ""
-                  }`}
-                  onClick={() => applyPreset(preset)}
-                >
-                  <div className="text-sm font-medium">{preset.name}</div>
-                  <div className="flex gap-2">
-                    {mainColors.map((key) => (
-                      <div
-                        key={key}
-                        className="w-6 h-6 rounded-full border"
-                        style={{
-                          backgroundColor: `hsl(${
-                            isDarkMode && preset.colors[`${key}-dark`]
-                              ? preset.colors[`${key}-dark`]
-                              : preset.colors[key]
-                          })`,
-                        }}
-                      />
-                    ))}
-                  </div>
-                </Button>
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
-
-        <div className="mt-6 p-4 bg-muted rounded-lg">
-          <h3 className="font-medium mb-2">Color Harmony</h3>
-          <p className="text-sm text-muted-foreground">
-            Changing the primary color will automatically generate harmonized
-            secondary and accent colors. The destructive color will always stay
-            in the red range for consistency. Muted colors are derived from the
-            primary color.
-          </p>
+          ))}
         </div>
-      </Card>
+
+        <div className="mt-4 flex flex-wrap items-center justify-start gap-4 mx-auto">
+          {SHADCN_PRESETS.map((preset) => (
+            <Button
+              key={preset.name}
+              variant="outline"
+              className={`group w-fit px-8 justify-start items-center hover:border-primar rounded-lg ${
+                currentPreset?.name === preset.name ? "ring-1 ring-primary" : ""
+              }`}
+              onClick={() => applyPreset(preset)}
+            >
+              <div className="text-sm flex gap-2 font-medium justify-start items-center">
+                <div
+                  className="h-5 w-5 rounded-full border shadow-sm transition-transform group-hover:scale-110"
+                  style={{
+                    backgroundColor: `hsl(${preset.colors["primary-dark"]})`,
+                  }}
+                />
+                {preset.name}
+              </div>
+            </Button>
+          ))}
+        </div>
+      </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl flex flex-col max-h-[90vh] bg-white dark:bg-black">
           <DialogHeader>
-            <DialogTitle className="text-2xl">Theme CSS</DialogTitle>
+            <DialogTitle className="text-2xl flex items-center gap-2">
+              <Copy className="w-5 h-5" />
+              Theme CSS
+            </DialogTitle>
             <DialogDescription>
               Copy the generated CSS code for your theme configuration.
             </DialogDescription>
           </DialogHeader>
 
-          <Tabs defaultValue="light" className="mt-4">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="light">Light Theme</TabsTrigger>
-              <TabsTrigger value="dark">Dark Theme</TabsTrigger>
-            </TabsList>
-            <TabsContent value="light" className="relative">
-              <div className="relative">
-                <pre className="p-4 rounded-lg bg-zinc-950 text-zinc-50 overflow-x-auto">
-                  <code>{generateCSS()}</code>
-                </pre>
-              </div>
-            </TabsContent>
-            <TabsContent value="dark" className="relative">
-              <div className="relative dark">
-                <pre className="p-4 rounded-lg bg-zinc-950 text-zinc-50 overflow-x-auto">
-                  <code>{generateCSS()}</code>
-                </pre>
-              </div>
-            </TabsContent>
-          </Tabs>
-
-          <div className="mt-4 flex justify-end">
-            <Button onClick={copyCSS} className="min-w-[100px]">
+          <div className="relative">
+            <pre className="max-h-[450px] overflow-x-auto rounded-lg border py-4 bg-muted px-4">
+              <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm">
+                {generateCSS()}
+              </code>
+            </pre>
+            <Button
+              className="h-8 rounded-md px-3 text-xs absolute right-4 top-4"
+              onClick={copyCSS}
+            >
               {copied ? (
                 <>
-                  <Check className="w-4 h-4 mr-2" />
-                  Copied!
+                  <Check className="w-4 h-4" /> Copied
                 </>
               ) : (
                 <>
-                  <Copy className="w-4 h-4 mr-2" />
-                  Copy CSS
+                  <Copy className="w-4 h-4" /> Copy{" "}
                 </>
               )}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </Card>
   );
 }
 
