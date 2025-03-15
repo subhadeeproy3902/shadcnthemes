@@ -16,12 +16,12 @@ export default function Navbar() {
         </p>
       </div>
       <div className="flex items-center gap-10">
-        <Link
+        {/* <Link
           href="/about"
           className="hover:underline hover:text-primary duration-300 transition-all md:text-lg font-semibold"
         >
           About
-        </Link>
+        </Link> */}
         <GitHubButton />
         <ModeToggle />
       </div>
