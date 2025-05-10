@@ -5,13 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Wand2,
-  RotateCcw,
-  Copy,
-  Check,
-  Lock,
-} from "lucide-react";
+import { Wand2, RotateCcw, Copy, Check, Lock } from "lucide-react";
 import { useTheme } from "next-themes";
 import {
   Dialog,
@@ -56,7 +50,10 @@ export function ThemeCustomizer() {
   );
 
   const isDarkMode = resolvedTheme === "dark";
-  const mainColors = useMemo(() => ["primary", "secondary", "accent", "destructive"], []);
+  const mainColors = useMemo(
+    () => ["primary", "secondary", "accent", "destructive"],
+    []
+  );
   const editableColors = useMemo(() => ["secondary", "accent"], []);
 
   const getThemeSpecificColor = (key: string) => {
@@ -262,7 +259,9 @@ export function ThemeCustomizer() {
       const oklchPrimary = hslStringToOklchString(colors.primary);
       const oklchPrimaryDark = hslStringToOklchString(colors["primary-dark"]);
       const oklchSecondary = hslStringToOklchString(colors.secondary);
-      const oklchSecondaryDark = hslStringToOklchString(colors["secondary-dark"]);
+      const oklchSecondaryDark = hslStringToOklchString(
+        colors["secondary-dark"]
+      );
       const oklchAccent = hslStringToOklchString(colors.accent);
       const oklchAccentDark = hslStringToOklchString(colors["accent-dark"]);
       const oklchDestructive = hslStringToOklchString(colors.destructive);
@@ -271,12 +270,17 @@ export function ThemeCustomizer() {
       const oklchLightForeground = "0.14100 0.00500 285.82300"; // Dark text
       const oklchDarkForeground = "0.98500 0.00000 0.00000"; // White text
 
-      const oklchPrimaryForeground = calculateOklchForegroundColor(oklchPrimary);
-      const oklchPrimaryDarkForeground = calculateOklchForegroundColor(oklchPrimaryDark);
-      const oklchSecondaryForeground = calculateOklchForegroundColor(oklchSecondary);
-      const oklchSecondaryDarkForeground = calculateOklchForegroundColor(oklchSecondaryDark);
+      const oklchPrimaryForeground =
+        calculateOklchForegroundColor(oklchPrimary);
+      const oklchPrimaryDarkForeground =
+        calculateOklchForegroundColor(oklchPrimaryDark);
+      const oklchSecondaryForeground =
+        calculateOklchForegroundColor(oklchSecondary);
+      const oklchSecondaryDarkForeground =
+        calculateOklchForegroundColor(oklchSecondaryDark);
       const oklchAccentForeground = calculateOklchForegroundColor(oklchAccent);
-      const oklchAccentDarkForeground = calculateOklchForegroundColor(oklchAccentDark);
+      const oklchAccentDarkForeground =
+        calculateOklchForegroundColor(oklchAccentDark);
       const oklchDestructiveForeground = "0.98500 0.00000 0.00000"; // White text for destructive
 
       const oklchLightMutedForeground = "0.14100 0.00500 285.82300";
@@ -397,7 +401,14 @@ export function ThemeCustomizer() {
     } else {
       updateThemeColors(colors);
     }
-  }, [theme, resolvedTheme, colorHistory.length, colors, currentPreset, updateThemeColors]);
+  }, [
+    theme,
+    resolvedTheme,
+    colorHistory.length,
+    colors,
+    currentPreset,
+    updateThemeColors,
+  ]);
 
   return (
     <Card className="relative overflow-hidden border bg-background/60 p-6 backdrop-blur-sm">
@@ -510,9 +521,7 @@ export function ThemeCustomizer() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl flex flex-col max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle className="text-2xl">
-              Theme
-            </DialogTitle>
+            <DialogTitle className="text-2xl">Theme</DialogTitle>
             <DialogDescription>
               Copy and paste the following code into your CSS file.
             </DialogDescription>
@@ -541,10 +550,7 @@ export function ThemeCustomizer() {
 
             <div className="flex-1"></div>
 
-            <Button
-              className="rounded-md"
-              onClick={copyCSS}
-            >
+            <Button className="rounded-md" onClick={copyCSS}>
               {copied ? (
                 <>
                   <Check className="w-4 h-4 mr-2" /> Copied
