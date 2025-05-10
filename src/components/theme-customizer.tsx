@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,8 +11,6 @@ import {
   Copy,
   Check,
   Lock,
-  Palette,
-  Sparkles,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import {
@@ -36,6 +34,10 @@ import {
   hexToHSL,
   calculateForegroundColor,
   parseHSLString,
+  hslStringToOklchString,
+  hexToOklch,
+  calculateOklchForegroundColor,
+  parseOklchString,
 } from "@/lib/colors";
 import { ScrollArea } from "./ui/scroll-area";
 import { BorderBeam } from "./ui/border-beam";
@@ -48,13 +50,14 @@ export function ThemeCustomizer() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState("custom");
+  const [isTailwindV4, setIsTailwindV4] = useState(false);
   const [currentPreset, setCurrentPreset] = useState<ColorPreset | null>(
     SHADCN_PRESETS[0]
   );
 
   const isDarkMode = resolvedTheme === "dark";
-  const mainColors = ["primary", "secondary", "accent", "destructive"];
-  const editableColors = ["secondary", "accent"];
+  const mainColors = useMemo(() => ["primary", "secondary", "accent", "destructive"], []);
+  const editableColors = useMemo(() => ["secondary", "accent"], []);
 
   const getThemeSpecificColor = (key: string) => {
     // Ensure we have a valid color value before returning
@@ -150,74 +153,74 @@ export function ThemeCustomizer() {
     }
   };
 
-  const updateThemeColors = (
-    newColors: ColorConfig,
-    preset?: ColorPreset | null
-  ) => {
-    const root = document.documentElement;
+  const updateThemeColors = useCallback(
+    (newColors: ColorConfig, preset?: ColorPreset | null) => {
+      const root = document.documentElement;
 
-    // Update main colors and their foregrounds
-    mainColors.forEach((key) => {
-      const value =
-        isDarkMode && newColors[`${key}-dark`]
-          ? newColors[`${key}-dark`]
-          : newColors[key];
-      root.style.setProperty(`--${key}`, value);
-      const foregroundColor = calculateForegroundColor(value);
-      root.style.setProperty(`--${key}-foreground`, foregroundColor);
-    });
+      // Update main colors and their foregrounds
+      mainColors.forEach((key) => {
+        const value =
+          isDarkMode && newColors[`${key}-dark`]
+            ? newColors[`${key}-dark`]
+            : newColors[key];
+        root.style.setProperty(`--${key}`, value);
+        const foregroundColor = calculateForegroundColor(value);
+        root.style.setProperty(`--${key}-foreground`, foregroundColor);
+      });
 
-    // Generate and set background colors
-    const backgroundValue = preset
-      ? isDarkMode
-        ? preset.backgroundDark
-        : preset.backgroundLight
-      : generateBackground(newColors.primary, isDarkMode);
-    root.style.setProperty("--background", backgroundValue);
-    root.style.setProperty(
-      "--foreground",
-      isDarkMode ? "0 0% 98%" : "240 10% 3.9%"
-    );
+      // Generate and set background colors
+      const backgroundValue = preset
+        ? isDarkMode
+          ? preset.backgroundDark
+          : preset.backgroundLight
+        : generateBackground(newColors.primary, isDarkMode);
+      root.style.setProperty("--background", backgroundValue);
+      root.style.setProperty(
+        "--foreground",
+        isDarkMode ? "0 0% 98%" : "240 10% 3.9%"
+      );
 
-    // Generate and set card colors
-    const cardValue = preset
-      ? isDarkMode
-        ? preset.cardDark
-        : preset.cardLight
-      : generateCard(newColors.primary, isDarkMode);
-    root.style.setProperty("--card", cardValue);
-    root.style.setProperty(
-      "--card-foreground",
-      isDarkMode ? "0 0% 98%" : "240 10% 3.9%"
-    );
+      // Generate and set card colors
+      const cardValue = preset
+        ? isDarkMode
+          ? preset.cardDark
+          : preset.cardLight
+        : generateCard(newColors.primary, isDarkMode);
+      root.style.setProperty("--card", cardValue);
+      root.style.setProperty(
+        "--card-foreground",
+        isDarkMode ? "0 0% 98%" : "240 10% 3.9%"
+      );
 
-    // Generate and set popover colors
-    const popoverValue = generatePopover(newColors.primary, isDarkMode);
-    root.style.setProperty("--popover", popoverValue);
-    root.style.setProperty(
-      "--popover-foreground",
-      isDarkMode ? "0 0% 98%" : "240 10% 3.9%"
-    );
+      // Generate and set popover colors
+      const popoverValue = generatePopover(newColors.primary, isDarkMode);
+      root.style.setProperty("--popover", popoverValue);
+      root.style.setProperty(
+        "--popover-foreground",
+        isDarkMode ? "0 0% 98%" : "240 10% 3.9%"
+      );
 
-    // Generate and set border and input colors
-    const borderValue = generateBorder(newColors.primary, isDarkMode);
-    const inputValue = generateInput(newColors.primary, isDarkMode);
-    root.style.setProperty("--border", borderValue);
-    root.style.setProperty("--input", inputValue);
+      // Generate and set border and input colors
+      const borderValue = generateBorder(newColors.primary, isDarkMode);
+      const inputValue = generateInput(newColors.primary, isDarkMode);
+      root.style.setProperty("--border", borderValue);
+      root.style.setProperty("--input", inputValue);
 
-    // Set ring color
-    const ringValue = generateRing(newColors.primary);
-    root.style.setProperty("--ring", ringValue);
+      // Set ring color
+      const ringValue = generateRing(newColors.primary);
+      root.style.setProperty("--ring", ringValue);
 
-    // Set muted colors based on background
-    const [bgH, bgS] = backgroundValue.split(" ");
-    const mutedValue = isDarkMode ? `${bgH} ${bgS} 15%` : `${bgH} ${bgS} 96%`;
-    root.style.setProperty("--muted", mutedValue);
-    root.style.setProperty(
-      "--muted-foreground",
-      isDarkMode ? "0 0% 63.9%" : "240 3.8% 46.1%"
-    );
-  };
+      // Set muted colors based on background
+      const [bgH, bgS] = backgroundValue.split(" ");
+      const mutedValue = isDarkMode ? `${bgH} ${bgS} 15%` : `${bgH} ${bgS} 96%`;
+      root.style.setProperty("--muted", mutedValue);
+      root.style.setProperty(
+        "--muted-foreground",
+        isDarkMode ? "0 0% 63.9%" : "240 3.8% 46.1%"
+      );
+    },
+    [isDarkMode, mainColors]
+  );
 
   const generateCSS = () => {
     const lightBackground = currentPreset
@@ -243,54 +246,133 @@ export function ThemeCustomizer() {
     const lightMuted = `${lightBgH} ${lightBgS} 96%`;
     const darkMuted = `${darkBgH} ${darkBgS} 15%`;
 
-    return `@layer base {
-  :root {
-    --background: ${lightBackground};
-    --foreground: 240 10% 3.9%;
-    --card: ${lightCard};
-    --card-foreground: 240 10% 3.9%;
-    --popover: ${lightPopover};
-    --popover-foreground: 240 10% 3.9%;
-    --primary: ${colors.primary};
-    --primary-foreground: ${calculateForegroundColor(colors.primary)};
-    --secondary: ${colors.secondary};
-    --secondary-foreground: ${calculateForegroundColor(colors.secondary)};
-    --accent: ${colors.accent};
-    --accent-foreground: ${calculateForegroundColor(colors.accent)};
-    --destructive: ${colors.destructive};
-    --destructive-foreground: 0 0% 98%;
-    --muted: ${lightMuted};
-    --muted-foreground: 240 3.8% 46.1%;
-    --border: ${lightBorder};
-    --input: ${lightBorder};
-    --ring: ${colors.primary};
-    --radius: 0.5rem;
-  }
+    if (isTailwindV4) {
+      // Convert all HSL values to OKLCH for Tailwind v4
+      const oklchLightBackground = hslStringToOklchString(lightBackground);
+      const oklchDarkBackground = hslStringToOklchString(darkBackground);
+      const oklchLightCard = hslStringToOklchString(lightCard);
+      const oklchDarkCard = hslStringToOklchString(darkCard);
+      const oklchLightPopover = hslStringToOklchString(lightPopover);
+      const oklchDarkPopover = hslStringToOklchString(darkPopover);
+      const oklchLightBorder = hslStringToOklchString(lightBorder);
+      const oklchDarkBorder = hslStringToOklchString(darkBorder);
+      const oklchLightMuted = hslStringToOklchString(lightMuted);
+      const oklchDarkMuted = hslStringToOklchString(darkMuted);
 
-  .dark {
-    --background: ${darkBackground};
-    --foreground: 0 0% 98%;
-    --card: ${darkCard};
-    --card-foreground: 0 0% 98%;
-    --popover: ${darkPopover};
-    --popover-foreground: 0 0% 98%;
-    --primary: ${colors["primary-dark"]};
-    --primary-foreground: ${calculateForegroundColor(colors["primary-dark"])};
-    --secondary: ${colors["secondary-dark"]};
-    --secondary-foreground: ${calculateForegroundColor(
-      colors["secondary-dark"]
-    )};
-    --accent: ${colors["accent-dark"]};
-    --accent-foreground: ${calculateForegroundColor(colors["accent-dark"])};
-    --destructive: ${colors.destructive};
-    --destructive-foreground: 0 0% 98%;
-    --muted: ${darkMuted};
-    --muted-foreground: 0 0% 63.9%;
-    --border: ${darkBorder};
-    --input: ${darkBorder};
-    --ring: ${colors["primary-dark"]};
-  }
+      const oklchPrimary = hslStringToOklchString(colors.primary);
+      const oklchPrimaryDark = hslStringToOklchString(colors["primary-dark"]);
+      const oklchSecondary = hslStringToOklchString(colors.secondary);
+      const oklchSecondaryDark = hslStringToOklchString(colors["secondary-dark"]);
+      const oklchAccent = hslStringToOklchString(colors.accent);
+      const oklchAccentDark = hslStringToOklchString(colors["accent-dark"]);
+      const oklchDestructive = hslStringToOklchString(colors.destructive);
+
+      // Calculate foreground colors in OKLCH
+      const oklchLightForeground = "0.14100 0.00500 285.82300"; // Dark text
+      const oklchDarkForeground = "0.98500 0.00000 0.00000"; // White text
+
+      const oklchPrimaryForeground = calculateOklchForegroundColor(oklchPrimary);
+      const oklchPrimaryDarkForeground = calculateOklchForegroundColor(oklchPrimaryDark);
+      const oklchSecondaryForeground = calculateOklchForegroundColor(oklchSecondary);
+      const oklchSecondaryDarkForeground = calculateOklchForegroundColor(oklchSecondaryDark);
+      const oklchAccentForeground = calculateOklchForegroundColor(oklchAccent);
+      const oklchAccentDarkForeground = calculateOklchForegroundColor(oklchAccentDark);
+      const oklchDestructiveForeground = "0.98500 0.00000 0.00000"; // White text for destructive
+
+      const oklchLightMutedForeground = "0.14100 0.00500 285.82300";
+      const oklchDarkMutedForeground = "0.98500 0.00000 0.00000";
+
+      return `:root {
+  --radius: 0.5rem;
+  --background: oklch(${oklchLightBackground});
+  --foreground: oklch(${oklchLightForeground});
+  --card: oklch(${oklchLightCard});
+  --card-foreground: oklch(${oklchLightForeground});
+  --popover: oklch(${oklchLightPopover});
+  --popover-foreground: oklch(${oklchLightForeground});
+  --primary: oklch(${oklchPrimary});
+  --primary-foreground: oklch(${oklchPrimaryForeground});
+  --secondary: oklch(${oklchSecondary});
+  --secondary-foreground: oklch(${oklchSecondaryForeground});
+  --accent: oklch(${oklchAccent});
+  --accent-foreground: oklch(${oklchAccentForeground});
+  --destructive: oklch(${oklchDestructive});
+  --destructive-foreground: oklch(${oklchDestructiveForeground});
+  --muted: oklch(${oklchLightMuted});
+  --muted-foreground: oklch(${oklchLightMutedForeground});
+  --border: oklch(${oklchLightBorder});
+  --input: oklch(${oklchLightBorder});
+  --ring: oklch(${oklchPrimary});
+}
+
+.dark {
+  --background: oklch(${oklchDarkBackground});
+  --foreground: oklch(${oklchDarkForeground});
+  --card: oklch(${oklchDarkCard});
+  --card-foreground: oklch(${oklchDarkForeground});
+  --popover: oklch(${oklchDarkPopover});
+  --popover-foreground: oklch(${oklchDarkForeground});
+  --primary: oklch(${oklchPrimaryDark});
+  --primary-foreground: oklch(${oklchPrimaryDarkForeground});
+  --secondary: oklch(${oklchSecondaryDark});
+  --secondary-foreground: oklch(${oklchSecondaryDarkForeground});
+  --accent: oklch(${oklchAccentDark});
+  --accent-foreground: oklch(${oklchAccentDarkForeground});
+  --destructive: oklch(${oklchDestructive});
+  --destructive-foreground: oklch(${oklchDestructiveForeground});
+  --muted: oklch(${oklchDarkMuted});
+  --muted-foreground: oklch(${oklchDarkMutedForeground});
+  --border: oklch(${oklchDarkBorder});
+  --input: oklch(${oklchDarkBorder});
+  --ring: oklch(${oklchPrimaryDark});
 }`;
+    } else {
+      // Original HSL format for Tailwind v3
+      return `:root {
+  --radius: 0.5rem;
+  --background: ${lightBackground};
+  --foreground: 240 10% 3.9%;
+  --card: ${lightCard};
+  --card-foreground: 240 10% 3.9%;
+  --popover: ${lightPopover};
+  --popover-foreground: 240 10% 3.9%;
+  --primary: ${colors.primary};
+  --primary-foreground: ${calculateForegroundColor(colors.primary)};
+  --secondary: ${colors.secondary};
+  --secondary-foreground: ${calculateForegroundColor(colors.secondary)};
+  --accent: ${colors.accent};
+  --accent-foreground: ${calculateForegroundColor(colors.accent)};
+  --destructive: ${colors.destructive};
+  --destructive-foreground: 0 0% 98%;
+  --muted: ${lightMuted};
+  --muted-foreground: 240 3.8% 46.1%;
+  --border: ${lightBorder};
+  --input: ${lightBorder};
+  --ring: ${colors.primary};
+}
+
+.dark {
+  --background: ${darkBackground};
+  --foreground: 0 0% 98%;
+  --card: ${darkCard};
+  --card-foreground: 0 0% 98%;
+  --popover: ${darkPopover};
+  --popover-foreground: 0 0% 98%;
+  --primary: ${colors["primary-dark"]};
+  --primary-foreground: ${calculateForegroundColor(colors["primary-dark"])};
+  --secondary: ${colors["secondary-dark"]};
+  --secondary-foreground: ${calculateForegroundColor(colors["secondary-dark"])};
+  --accent: ${colors["accent-dark"]};
+  --accent-foreground: ${calculateForegroundColor(colors["accent-dark"])};
+  --destructive: ${colors.destructive};
+  --destructive-foreground: 0 0% 98%;
+  --muted: ${darkMuted};
+  --muted-foreground: 0 0% 63.9%;
+  --border: ${darkBorder};
+  --input: ${darkBorder};
+  --ring: ${colors["primary-dark"]};
+}`;
+    }
   };
 
   const copyCSS = async () => {
@@ -315,9 +397,7 @@ export function ThemeCustomizer() {
     } else {
       updateThemeColors(colors);
     }
-  }, [theme, resolvedTheme]);
-
-  console.log(colors["primary-dark"], colors.primary);
+  }, [theme, resolvedTheme, colorHistory.length, colors, currentPreset, updateThemeColors]);
 
   return (
     <Card className="relative overflow-hidden border bg-background/60 p-6 backdrop-blur-sm">
@@ -428,37 +508,61 @@ export function ThemeCustomizer() {
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl flex flex-col max-h-[90vh] bg-white dark:bg-black">
+        <DialogContent className="max-w-2xl flex flex-col max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle className="text-2xl flex items-center gap-2">
-              <Copy className="w-5 h-5" />
-              Theme CSS
+            <DialogTitle className="text-2xl">
+              Theme
             </DialogTitle>
             <DialogDescription>
-              Copy the generated CSS code for your theme configuration.
+              Copy and paste the following code into your CSS file.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="relative">
-            <pre className="max-h-[450px] overflow-x-auto rounded-lg border py-4 bg-muted px-4">
-              <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm">
-                {generateCSS()}
-              </code>
-            </pre>
+          <div className="flex gap-2 mb-4">
+            <div className="bg-muted rounded-lg p-1 flex">
+              <Button
+                size="sm"
+                variant={isTailwindV4 ? "default" : "outline"}
+                onClick={() => setIsTailwindV4(true)}
+                className="rounded-md"
+              >
+                Tailwind v4
+              </Button>
+
+              <Button
+                size="sm"
+                variant={!isTailwindV4 ? "default" : "outline"}
+                onClick={() => setIsTailwindV4(false)}
+                className="rounded-md"
+              >
+                v3
+              </Button>
+            </div>
+
+            <div className="flex-1"></div>
+
             <Button
-              className="h-8 rounded-md px-3 text-xs absolute right-4 top-4"
+              className="rounded-md"
               onClick={copyCSS}
             >
               {copied ? (
                 <>
-                  <Check className="w-4 h-4" /> Copied
+                  <Check className="w-4 h-4 mr-2" /> Copied
                 </>
               ) : (
                 <>
-                  <Copy className="w-4 h-4" /> Copy{" "}
+                  <Copy className="w-4 h-4 mr-2" /> Copy
                 </>
               )}
             </Button>
+          </div>
+
+          <div className="relative">
+            <pre className="max-h-[450px] overflow-x-auto rounded-lg border bg-secondary text-foreground py-4 px-4">
+              <code className="relative font-mono text-sm">
+                {generateCSS()}
+              </code>
+            </pre>
           </div>
         </DialogContent>
       </Dialog>
